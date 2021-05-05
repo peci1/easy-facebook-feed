@@ -52,7 +52,7 @@ class EffConnect
     public function eff_get_page_feed($pageId, $postLimit)
     {
         $accessToken = $this->accessToken;
-        $fields = 'full_picture,type,message,link,name,description,from,source,created_time,permalink_url,object_id';
+        $fields = 'created_time,from,message,full_picture,attachments{unshimmed_url,title,media_type,target{id},media{source}}';
         $fields = apply_filters('effp-page-feed-fields', $fields);
         $url = "https://graph.facebook.com/{$this->version}/{$pageId}/posts?fields={$fields}&access_token={$accessToken}&limit={$postLimit}";
         return $this->eff_connect($url);

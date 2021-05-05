@@ -13,10 +13,10 @@ class Post
         $template = apply_filters('effp-post', $template, $data);
 
         $template->set('link-text', __('View', 'easy-facebook-feed'));
-        $template->set('page-link', $page->link);
+        $template->set('page-link', $data->attachments->data[0]->unshimmed_url);
         $template->set('page-cover-source', $page->picture->data->url);
         $template->set('data-from-name', $data->from->name);
-        isset($data->permalink_url) ? $template->set('data-link', $data->permalink_url) : $template->set('data-link', $page->link);
+        isset($data->permalink_url) ? $template->set('data-link', $data->permalink_url) : $template->set('data-link', $data->attachments->data[0]->unshimmed_url);
         $template->set('data-created_time', $this->eff_time_elapsed_string($data->created_time));
         if (isset($data->message)) {
             $message = $this->setUrls($data->message);
@@ -48,17 +48,17 @@ class Post
     public function eff_makeVideo($data)
     {
         // added akamaihd to the cdns
-        if (isset($data->source) && (strpos($data->source, 'fbcdn') || strpos($data->source, 'akamaihd'))) {
+        if (isset($data->attachments->media->source) && (strpos($data->attachments->media->source, 'fbcdn') || strpos($data->attachments->media->source, 'akamaihd'))) {
             // proposition: WP supports embeding of facebook videos. We can use it by default and use the html5 <video> as a fallback
-            $embed = wp_oembed_get($data->link);
+            $embed = wp_oembed_get($data->attachments->data[0]->unshimmed_url);
             if ($embed) return $embed;
             $template = new Template('eff-video.html');
-            $template->set('data-source', $data->source);
+            $template->set('data-source', $data->attachments->media->source);
             $template->set('data-picture', $data->full_picture);
-            $template->set('data-link', $data->link);
-        } elseif (isset($data->source) && strpos($data->source, 'youtube.com')) {
+            $template->set('data-link', $data->attachments->data[0]->unshimmed_url);
+        } elseif (isset($data->attachments->media->source) && strpos($data->attachments->media->source, 'youtube.com')) {
             // oembed youtube videos, or fallback to picture + link. could add other providers
-            $embed = wp_oembed_get($data->link);
+            $embed = wp_oembed_get($data->attachments->data[0]->unshimmed_url);
             if (!$embed) {
                 $template = new Template('eff-photo.html');
                 $template->set('image-url', $data->full_picture);
@@ -80,14 +80,14 @@ class Post
     public function eff_makeEvent($data, $eventDetails)
     {
         $template = new Template('eff-event.html');
-        $template->set('data-link', $data->link);
-        $template->set('data-name', $data->name);
+        $template->set('data-link', $data->attachments->data[0]->unshimmed_url);
+        $template->set('data-name', $data->attachments->title);
         // event date
         $date = strtotime($eventDetails->start_time);
         $template->set('data-month', strftime('%b', $date));
         $template->set('data-day', strftime('%d', $date));
 
-        //$template->set('data-description', nl2br($data->description));
+        //$template->set('data-description', nl2br($data->attachments->description));
         // if event has a tickets link
         if (isset($eventDetails->ticket_uri)) {
             $template_ticket_link = new Template('eff-event-ticket-link.html');
@@ -124,10 +124,10 @@ class Post
     public function eff_makeLink($data)
     {
         $template = new Template('eff-link.html');
-        $template->set('data-link', $data->link);
-        $template->set('data-name', $data->name);
-        if (isset($data->description)) {
-            $template->set('data-description', nl2br($data->description));
+        $template->set('data-link', $data->attachments->data[0]->unshimmed_url);
+        $template->set('data-name', $data->attachments->title);
+        if (isset($data->attachments->description)) {
+            $template->set('data-description', nl2br($data->attachments->description));
         } else {
             $template->set('data-description', '');
         }

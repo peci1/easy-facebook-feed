@@ -77,14 +77,15 @@ class Eff
             }
 
             foreach ($feed->data as $key => $data) {
+                $type = $data->attachments->data[0]->media_type;
 
-                if(in_array($data->type, $exclude)) {
+                if(in_array($type, $exclude)) {
                     continue;
                 }
 
                 $postTemplate = $this->post->eff_makePost($data, $page);
 
-                switch ($data->type) {
+                switch ($type) {
                     case 'photo':
                         $photoTemplate = $this->post->eff_makePhoto($data);
                         $items[$data->created_time] = Template::merge($postTemplate, $photoTemplate);
