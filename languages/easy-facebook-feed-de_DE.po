@@ -24,7 +24,7 @@ msgid "Easy Facebook Feed shows your Facebook feed in an easy way!"
 msgstr ""
 
 #. Plugin URI of the plugin/theme
-msgid "http://easy-facebook-feed.nl"
+msgid "http://shop.stage16.nl"
 msgstr ""
 
 #: includes/class.eff-widget.php:48

@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: Easy Facebook Feed
- * Plugin URI: http://easy-facebook-feed.nl
+ * Plugin URI: http://shop.stage16.nl
  * Description: Easy Facebook Feed shows your Facebook feed in an easy way!
- * Version: 3.0.15
+ * Version: 3.0.25
  * Author: timwass
  * Text Domain: easy-facebook-feed
  * License: GPLv2 or later

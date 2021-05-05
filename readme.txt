@@ -1,32 +1,54 @@
 === Easy Facebook Feed ===
 Contributors: timwass
 Author: Tim
-Tags: facebook, feed, widget, plugin, page, shortcode
+Tags: facebook, feed, wall, posts, widget, plugin, page, shortcode, social, events
 Requires at least: 3.0.1
 Tested up to: 4.9
-Stable tag: 3.0.15
-Version: 3.0.15
+Stable tag: 3.0.25
+Version: 3.0.25
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Get your Facebook posts on your Wordpress website in an easy way!
+Easy Facebook Feed makes things easy and will save you time, no annoying hassle with access tokens with the one-click solution to generate one.
 
 == Description ==
 
-[Demo](http://easy-facebook-feed.nl/)
+Easy Facebook Feed makes things easy and will save you time, no annoying hassle with access tokens with the one-click solution to generate one. It just displays a nice clean responsive feed of your website.
 
-Get your Facebook posts on your Wordpress website in an easy way. Features in Easy Facebook Feed include:
+*"Really easy and it is the best!"* - [wxia0822](https://wordpress.org/support/topic/really-easy-and-it-is-the-best/)
+
+*"Just what I was looking for, very pleased with the ease of set-up and the nice clean result. Thank you!"* - [essjay88](https://wordpress.org/support/topic/super-easy-nice-styling/)
+
+*"Excellent and easy plugin, super support!"* - [mashut](https://wordpress.org/support/topic/excellent-and-easy-plugin-super-support/)
+
+[Easy Facebook Feed Demo](http://shop.stage16.nl/)
+
+= Features =
 
 *   Displays shared links, video's, status updates, events and photo's from your Facebook page.
 *   Multiple feeds.
+*   SEO friendly.
 *   Responsive layout.
 *   Uses the colors of your theme.
 *   Adjustable number of posts.
 *   Usable as full page (shortcode).
 *   Usable as widget.
-*	Caching for optimal performance
-*   Translation ready
+*	Caching for optimal performance.
+*   Translation ready.
 *   Easy to use.
+
+= Pro Version =
+
+For the price of 2 cup of coffee's you support us to continue to improve Easy Facebook Feed, you also get the following advantages:
+
+*   Blend Easy Facebook Feed Pro seamlessly into your website design with customization options.
+*   Show the number of likes, shares and posts in each post.
+
+[More information](http://shop.stage16.nl/product/easy-facebook-feed-pro/)
+
+= Other plugins we have made =
+
+Did you like Easy Facebook Feed but you are looking for something similar for Instagram? Then checkout our new [Easy Instagram Slider](https://wordpress.org/plugins/easy-instagram-slider) plugin. If you have any suggestions or feedback, please let us know.
 
 == Installation ==
 
@@ -85,6 +107,27 @@ This is an issue with Jetpack Photon, Photon is breaking some of the image urls.
 2. Easy Facebook Feed as widget in a sidebar.
 
 == Changelog ==
+
+= 3.0.24 =
+* Fixed some debug warnings
+
+= 3.0.22 =
+* Added shortcode to exclude post types
+
+= 3.0.21 =
+* Generate access token option
+
+= 3.0.20 =
+* Added option to add your own access token
+
+= 3.0.19 =
+* Access token update
+
+= 3.0.18 =
+* Changed icon and text
+
+= 3.0.16 =
+* Added Events (credits to Marc Lacroix)
 
 = 3.0.11 =
 * Minor css fixes

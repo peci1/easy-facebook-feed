@@ -2,12 +2,34 @@
 
 class EffConnect
 {
-    private $accessToken = '1492018151012834|U3qsH98pUZxv5watRRC4c-rg1rc';
+    private $accessToken;
     private $error;
+    private $version;
 
     public function __construct()
     {
         $this->error = new EffError();
+        $this->version = 'v3.0';
+        $this->accessToken = $this->getAccessToken();
+    }
+
+    /**
+     * @return string
+     */
+    private function getAccessToken()
+    {
+        return get_option('eff_access_token');
+    }
+
+    /**
+     * @param $token
+     * @return string
+     */
+    public function setAccessToken($token)
+    {
+        $this->accessToken = $token;
+
+        return $this->accessToken;
     }
 
     /**
@@ -18,10 +40,8 @@ class EffConnect
     {
         $fields = 'link,name,cover,picture';
         $accessToken = $this->accessToken;
-        //updated graph Version (no changes to the api we use)
-        $url = "https://graph.facebook.com/v2.11/{$pageId}?fields={$fields}&access_token={$accessToken}";
-        $page = $this->eff_connect($url);
-        return $page;
+        $url = "https://graph.facebook.com/{$this->version}/{$pageId}?fields={$fields}&access_token={$accessToken}";
+        return $this->eff_connect($url);
     }
 
     /**
@@ -32,24 +52,24 @@ class EffConnect
     public function eff_get_page_feed($pageId, $postLimit)
     {
         $accessToken = $this->accessToken;
-        // added object_id to the fields
         $fields = 'full_picture,type,message,link,name,description,from,source,created_time,permalink_url,object_id';
         $fields = apply_filters('effp-page-feed-fields', $fields);
-        $url = "https://graph.facebook.com/v2.11/{$pageId}/posts?fields={$fields}&access_token={$accessToken}&limit={$postLimit}";
-        $feed = $this->eff_connect($url);
-        return $feed;
+        $url = "https://graph.facebook.com/{$this->version}/{$pageId}/posts?fields={$fields}&access_token={$accessToken}&limit={$postLimit}";
+        return $this->eff_connect($url);
     }
-    // get event details
+
+    /**
+     * @param $eventId
+     * @return array|mixed|object
+     */
     public function eff_get_event_details($eventId)
     {
         $accessToken = $this->accessToken;
         $fields = 'description,name,start_time,event_times,ticket_uri,cover,timezone,place';
         $fields = apply_filters('effp-event-fields', $fields);
-        $url = "https://graph.facebook.com/v2.11/{$eventId}?fields={$fields}&access_token={$accessToken}";
-        $event = $this->eff_connect($url);
-        return $event;
+        $url = "https://graph.facebook.com/{$this->version}/{$eventId}?fields={$fields}&access_token={$accessToken}";
+        return $this->eff_connect($url);
     }
-
 
     /**
      * @param $url
@@ -71,17 +91,13 @@ class EffConnect
     {
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // disable ssl verifypeer to avoid trouble on some configs
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         $json = curl_exec($ch);
         if ($json === false) {
-            //echo $this->error->print_error_message(curl_error($ch));
-            // returns the error instead of echo and exit
             $arr = array('error' => array('message' => curl_error($ch)));
             $json = json_encode($arr);
-            
             curl_close($ch);
             return $json;
-            //exit(); // exit kills the rest of the website from rendering. 
         }
         curl_close($ch);
 
@@ -93,7 +109,7 @@ class EffConnect
         if (file_get_contents($url)) {
             $json = file_get_contents($url);
         } else {
-            $arr = array('error' => array('message' => "Unknown file_get_contents connection error with Facebook."));
+            $arr = array('error' => error_get_last());
             $json = json_encode($arr);
         }
 

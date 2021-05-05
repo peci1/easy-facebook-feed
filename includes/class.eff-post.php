@@ -48,21 +48,21 @@ class Post
     public function eff_makeVideo($data)
     {
         // added akamaihd to the cdns
-        if (strpos($data->source, 'fbcdn') || strpos($data->source, 'akamaihd') ) {
+        if (isset($data->source) && (strpos($data->source, 'fbcdn') || strpos($data->source, 'akamaihd'))) {
             // proposition: WP supports embeding of facebook videos. We can use it by default and use the html5 <video> as a fallback
-            $embed = wp_oembed_get( $data->link );
-            if( $embed ) return $embed;
+            $embed = wp_oembed_get($data->link);
+            if ($embed) return $embed;
             $template = new Template('eff-video.html');
             $template->set('data-source', $data->source);
             $template->set('data-picture', $data->full_picture);
             $template->set('data-link', $data->link);
-        } elseif( strpos($data->source, 'youtube.com') ) {
+        } elseif (isset($data->source) && strpos($data->source, 'youtube.com')) {
             // oembed youtube videos, or fallback to picture + link. could add other providers
-            $embed = wp_oembed_get( $data->link );
-            if( ! $embed ){
+            $embed = wp_oembed_get($data->link);
+            if (!$embed) {
                 $template = new Template('eff-photo.html');
-                $template->set('image-url', $data->full_picture);                    
-            } else { 
+                $template->set('image-url', $data->full_picture);
+            } else {
                 return $embed;
             }
         } else {
@@ -77,38 +77,38 @@ class Post
      * @param $data
      * @return mixed
      */
-    public function eff_makeEvent($data,$eventDetails)
+    public function eff_makeEvent($data, $eventDetails)
     {
         $template = new Template('eff-event.html');
         $template->set('data-link', $data->link);
         $template->set('data-name', $data->name);
         // event date
-        $date = strtotime( $eventDetails->start_time );
-        $template->set('data-month', strftime( '%b' ,$date ) );
-        $template->set('data-day', strftime( '%d' ,$date ) );
-        
+        $date = strtotime($eventDetails->start_time);
+        $template->set('data-month', strftime('%b', $date));
+        $template->set('data-day', strftime('%d', $date));
+
         //$template->set('data-description', nl2br($data->description));
         // if event has a tickets link
         if (isset($eventDetails->ticket_uri)) {
-            $template_ticket_link = new Template( 'eff-event-ticket-link.html' );
-            $template_ticket_link->set('data-link', $eventDetails->ticket_uri );
-            $domain = $this->get_domain( $eventDetails->ticket_uri );
-            if(!$domain) {
+            $template_ticket_link = new Template('eff-event-ticket-link.html');
+            $template_ticket_link->set('data-link', $eventDetails->ticket_uri);
+            $domain = $this->get_domain($eventDetails->ticket_uri);
+            if (!$domain) {
                 $domain = $eventDetails->ticket_uri;
             }
-            $template_ticket_link->set('data-name', sprintf( __('Get your tickets on %1$s','easy-facebook-feed'), $domain ) );
+            $template_ticket_link->set('data-name', sprintf(__('Get your tickets on %1$s', 'easy-facebook-feed'), $domain));
             $template_ticket_link = $template_ticket_link->output();
             $template->set('data-ticket', $template_ticket_link);
         } else {
-            $template->remove('data-ticket'); 
+            $template->remove('data-ticket');
         }
         // if event has a cover picture
         if (isset($eventDetails->cover)) {
             $template2 = new Template('eff-event-cover.html');
             $template2->set('data-picture', $eventDetails->cover->source);
-            $margin = isset( $eventDetails->cover->offset_y ) ? '-'. $eventDetails->cover->offset_y : 0;
+            $margin = isset($eventDetails->cover->offset_y) ? '-' . $eventDetails->cover->offset_y : 0;
             $template2->set('data-margin', $margin);
-        $template = Template::merge($template->output(), $template2->output());
+            $template = Template::merge($template->output(), $template2->output());
         } else {
             $template->remove('data-content');
             $template = $template->output();
@@ -201,13 +201,15 @@ class Post
 
         return $message;
     }
+
     // utility function to get domain name
-    private function get_domain( $url ) {
-        $url = parse_url( $url );
-        if( $url && isset( $url['host'] ) ) {
+    private function get_domain($url)
+    {
+        $url = parse_url($url);
+        if ($url && isset($url['host'])) {
             return $url['host'];
-        } 
+        }
         return false;
-    }    
+    }
 
 }

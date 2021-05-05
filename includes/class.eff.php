@@ -33,6 +33,7 @@ class Eff
         $shortcode_atts = shortcode_atts(array(
             'id' => $options['facebook_page_id'],
             'limit' => $options['facebook_post_limit'],
+            'exclude' => ''
         ), $atts);
 
         $shortcode_atts['id'] = array_map('trim', array_filter(explode(',', $shortcode_atts['id'])));
@@ -40,6 +41,8 @@ class Eff
             echo $this->error->print_error_message("No Facebook page id found, please check your Easy Facebook Feed settings and/or shortcode if the Facebook page id is set correctly");
             return false;
         }
+
+        $exclude = explode(',', $shortcode_atts['exclude']);
 
         // check if cached version is available
         $cacheKey = md5('eff' . serialize($shortcode_atts));
@@ -53,10 +56,16 @@ class Eff
         // get facebook posts and set templates
         foreach ($shortcode_atts['id'] as $id) {
             $con = new EffConnect();
+
+            if(isset($atts['access_token'])) {
+                $con->setAccessToken($atts['access_token']);
+            }
+            
             $feed = $con->eff_get_page_feed($id, $shortcode_atts['limit']);
             $page = $con->eff_get_page($id);
             $result = '';
-            //handles both possible errors 
+
+            //handles both possible errors
             if( isset($feed->error) || isset($page->error) ) {
                 if( isset($feed->error) ){
                     $result .= $this->error->print_error_message($feed->error->message);
@@ -66,7 +75,13 @@ class Eff
                 }
                 return $result;
             }
+
             foreach ($feed->data as $key => $data) {
+
+                if(in_array($data->type, $exclude)) {
+                    continue;
+                }
+
                 $postTemplate = $this->post->eff_makePost($data, $page);
 
                 switch ($data->type) {
@@ -84,10 +99,6 @@ class Eff
                         break;
                     case 'event':
                         $eventDetails = $con->eff_get_event_details($data->object_id);
-                        // echo '<pre>';
-                        // var_dump( $eventDetails );
-                        // echo '</pre>';
-                                
                         $eventTemplate = $this->post->eff_makeEvent($data, $eventDetails);
                         $items[$data->created_time] = Template::merge($postTemplate, $eventTemplate);
                         break;

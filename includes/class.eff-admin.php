@@ -26,13 +26,13 @@ class MySettingsPage
     /**
      * Load stylesheets
      */
-    function eff_stylesheet()
+    public function eff_stylesheet()
     {
         wp_register_style('eff_style', plugins_url('../css/eff_style.css?8', __FILE__));
         wp_enqueue_style('eff_style');
     }
 
-    function admin_footer_text($footer_text)
+    public function admin_footer_text($footer_text)
     {
         $current_screen = get_current_screen();
 
@@ -57,6 +57,27 @@ class MySettingsPage
             'easy-facebook-feed',
             array($this, 'create_admin_page')
         );
+
+        add_options_page(
+            'Easy Facebook Feed Token',
+            null,
+            'manage_options',
+            'cff-top',
+            array($this, 'setToken')
+        );
+    }
+
+    /**
+     * setToken
+     */
+    public function setToken() {
+
+        if(isset($_GET['final_response']) && $_GET['final_response'] === "true") {
+            update_option('eff_access_token', $_GET['access_token']);
+
+            print('<script>window.location.href="admin.php?page=easy-facebook-feed"</script>');
+        }
+
     }
 
     /**
@@ -83,7 +104,7 @@ class MySettingsPage
                 <?php if ( is_plugin_active( 'easy-facebook-feed-pro/easy-facebook-feed-pro.php' ) ): ?>
                     <a href="?page=easy-facebook-feed&tab=display" class="nav-tab <?php echo $active_tab == 'display' ? 'nav-tab-active' : ''; ?>"><?php _e("Easy Facebook Feed Pro", 'easy-facebook-feed'); ?></a>
                 <?php else: ?>
-                    <a href="http://easy-facebook-feed.nl/product/easy-facebook-feed-pro/" target="_blank" class="nav-tab"><?php _e("Easy Facebook Feed Pro", 'easy-facebook-feed'); ?></a>
+                    <a href="http://shop.stage16.nl/product/easy-facebook-feed-pro/" target="_blank" class="nav-tab"><?php _e("Easy Facebook Feed Pro", 'easy-facebook-feed'); ?></a>
                 <?php endif; ?>
             </h2>
 
@@ -126,6 +147,23 @@ class MySettingsPage
             __("General", 'easy-facebook-feed'), // Title
             array($this, 'print_section_info'), // Callback
             'my-setting-admin' // Page
+        );
+
+        add_settings_field(
+            'get_access_token', // ID
+            __("Generate Access Token", 'easy-facebook-feed'), // Title
+            array($this, 'get_access_token'), // Callback
+            'my-setting-admin', // Page
+            'setting_section_id' // Section
+        );
+
+        //accesstoken input
+        add_settings_field(
+            'accesstoken_input',
+            __("Facebook Access Token", 'easy-facebook-feed'),
+            array($this, 'accesstoken_input'),
+            'my-setting-admin',
+            'setting_section_id'
         );
 
         add_settings_field(
@@ -173,6 +211,7 @@ class MySettingsPage
      * Sanitize each setting field as needed
      *
      * @param array $input Contains all settings fields as array keys
+     * @return array
      */
     public function sanitize($input)
     {
@@ -202,6 +241,18 @@ class MySettingsPage
             add_settings_error( 'caching_refresh_time', 'caching_refresh_time', __('Invalid refresh time value', 'easy-facebook-feed') );
         }
 
+        if (!empty($input['enable_accesstoken'])) {
+
+            if($input['accesstoken'] === "") {
+                add_settings_error( 'accesstoken', 'accesstoken', __('Access Token can not be empty', 'easy-facebook-feed') );
+                $new_input['accesstoken'] = $options['accesstoken'];
+            } else {
+                $new_input['accesstoken'] = $input['accesstoken'];
+            }
+        }
+
+        $this->eff_clear_cache(false);
+
         return $new_input;
     }
 
@@ -213,6 +264,15 @@ class MySettingsPage
         print "<div class='notice notice-info'>
             <p><strong>" . __("Quickstart:", "easy-facebook-feed") . " </strong>" . __("Add [easy_facebook_feed] on your page to display the facebook feed on your page. Or you can add the Easy Facebook Feed widget to your widget area.", 'easy-facebook-feed') . "</p>
         </div>";
+    }
+
+    /**
+     * Print the Section text
+     */
+    public function get_access_token()
+    {
+        print "<a class='button button-primary' href='https://smashballoon.com/custom-facebook-feed/app-login/?state=" . admin_url('admin.php?page=cff-top') . "'>Login</a>
+        <p class='description'><strong style='color:red;'>Required:</strong> generate your own access token.</p>";
     }
 
     /**
@@ -237,6 +297,36 @@ class MySettingsPage
                     <p class="description">' . __("Number of posts to display", 'easy-facebook-feed') . '</p>',
             isset($this->options['facebook_post_limit']) ? esc_attr($this->options['facebook_post_limit']) : '5'
         );
+    }
+
+    /**
+     * Get the settings option array and print one of its values
+     */
+    public function enable_accesstoken()
+    {
+        if(isset($_GET['final_response']) && $_GET['final_response'] === "true") {
+            $checked = 'checked';
+        } else {
+            $checked = ($this->options['enable_accesstoken'] === "1") ? 'checked' : '';
+        }
+
+        echo '<input type="checkbox" name="eff_options[enable_accesstoken]" id="enable_accesstoken" value="1" '.$checked.' />';
+    }
+
+    /**
+     * Get the settings option array and print one of its values
+     */
+    public function accesstoken_input()
+    {
+        if(isset($_GET['final_response']) && $_GET['final_response'] === "true") {
+            print '<input type="text" name="eff_options[accesstoken]" id="accesstoken" value="'.$_GET['access_token'].'" />
+            <p class="description" style="color: green; font-weight: bold;">Access Token set</p>';
+        } else {
+            printf(
+                '<input type="text" name="eff_options[accesstoken]" id="accesstoken" value="%s" />',
+                get_option('eff_access_token')
+            );
+        }
     }
 
     /**
@@ -277,7 +367,7 @@ class MySettingsPage
         </script> <?php
     }
 
-    function eff_clear_cache() {
+    public function eff_clear_cache($ajax = true) {
         global $wpdb;
         $prefix = $wpdb->prefix;
         $results = 0;
@@ -290,7 +380,9 @@ class MySettingsPage
             _e('No cache found', 'easy-facebook-feed');
         }
 
-        wp_die(); // this is required to terminate immediately and return a proper response
+        if($ajax) {
+            wp_die();
+        }
     }
 
 }
